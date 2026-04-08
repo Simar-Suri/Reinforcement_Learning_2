@@ -94,7 +94,7 @@ class SARSAAgent(object):
                 action = self.select_action(prev_state, environment.possible_actions())
                 reward = environment.step(action) 
                 next_state = environment.state()
-                next_action = self.select_action(next_state, environment.possible_actions)  
+                next_action = self.select_action(next_state, environment.possible_actions())  
                 run_rewards.append(reward)     
                 self.update(prev_state, action, next_state, next_action, reward, environment.done())
                 action = next_action
@@ -150,32 +150,74 @@ class ExpectedSARSAAgent(object):
             episode_returns.append(sum(run_rewards))
         return episode_returns
 
-
 class nStepSARSAAgent(object):
 
-    def __init__(self, n_actions, n_states, n, epsilon=0.1, alpha=0.1, gamma=1.0):
+    def __init__(self, n_actions, n_states, n_steps, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment):
         self.n_actions = n_actions
         self.n_states = n_states
-        self.n = n
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
+        self.Q = np.zeros((n_states, n_actions))
+        self.env_type = env_type
+        self.n_steps = n_steps
         # TO DO: Initialize variables if necessary
         
-    def select_action(self, state):
+    def select_action(self, state, possible_actions):
         # TO DO: Implement policy
         action = None
+        action = None
+        greedy_prob = np.random.rand()
+        if greedy_prob <= self.epsilon:
+            action = np.random.choice(possible_actions)
+
+        else:
+            action = np.argmax(self.Q[state])
+
         return action
+
         
-    def update(self, states, actions, rewards, done): # Augment arguments if necessary
-        # TO DO: Implement n-step SARSA update
-        pass
-    
+    def update(self, state, action, G):
+        self.Q[state][action] += self.alpha * (G - self.Q[state][action])
+
     def train(self, n_episodes):
-        # TO DO: Implement the agent loop that trains for n_episodes. 
-        # Return a vector with the the cumulative reward (=return) per episode
         episode_returns = []
-        return episode_returns  
-    
-    
+        environment = self.env_type()
+        for run in range(n_episodes):
+            environment.reset()
+
+            states, actions, rewards = [environment.state()], [self.select_action(environment.state(), environment.possible_actions())], []
+ 
+            t = 0
+            T = float('inf')  
+ 
+            while True:
+
+                if t < T:
+                    reward = environment.step(actions[t])
+                    rewards.append(reward)
+                    next_state = environment.state()
+                    states.append(next_state)
+
+                    if environment.done():
+                        T = t + 1
+                    else:
+                        actions.append(self.select_action(next_state, environment.possible_actions()))
+
+                tau = t - self.n_steps + 1
+                if tau >= 0:
+                    G = sum((self.gamma ** (i - tau)) * rewards[i] for i in range(tau, min(tau + self.n_steps, T)))
+
+                    if tau + self.n_steps < T:
+                        G += (self.gamma ** self.n_steps) * self.Q[states[tau + self.n_steps]][actions[tau + self.n_steps]]
+ 
+                    self.update(states[tau], actions[tau], G)
+ 
+                    if tau == T - 1:
+                        break
+ 
+                t += 1
+ 
+            episode_returns.append(sum(rewards))
+        return episode_returns
     

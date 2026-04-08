@@ -2,13 +2,14 @@ import numpy as np
 from ShortCutEnvironment import ShortcutEnvironment
 class QLearningAgent(object):
 
-    def __init__(self, n_actions, n_states, epsilon=0.1, alpha=0.1, gamma=1.0):
+    def __init__(self, n_actions, n_states, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment):
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
         self.Q = np.zeros((n_states, n_actions))
+        self.env_type = env_type
         # TO DO: Initialize variables if necessary
          
     def select_action(self, state):
@@ -34,7 +35,7 @@ class QLearningAgent(object):
         # TO DO: Implement the agent loop that trains for n_episodes. 
         # Return a vector with the the cumulative reward (=return) per episode
         episode_returns = []
-        environment = ShortcutEnvironment()
+        environment = self.env_type ()
         for run in range(n_episodes):
             environment.reset()
             run_rewards = []
@@ -48,30 +49,56 @@ class QLearningAgent(object):
             episode_returns.append(sum(run_rewards))
         return episode_returns
 
-
 class SARSAAgent(object):
 
-    def __init__(self, n_actions, n_states, epsilon=0.1, alpha=0.1, gamma=1.0):
+    def __init__(self, n_actions, n_states, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment):
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
+        self.Q = np.zeros((n_states, n_actions))
+        self.env_type = env_type
         # TO DO: Initialize variables if necessary
         
-    def select_action(self, state):
+    def select_action(self, state, possible_actions):
         # TO DO: Implement policy
         action = None
+        action = None
+        greedy_prob = np.random.rand()
+        if greedy_prob <= self.epsilon:
+            action = np.random.choice(possible_actions)
+
+        else:
+            action = np.argmax(self.Q[state])
+
         return action
+
         
-    def update(self, state, action, reward, done): # Augment arguments if necessary
-        # TO DO: Implement SARSA update
-        pass
+    def update(self, state, action, next_state, next_action, reward, done): # Augment arguments if necessary
+        if done:
+            self.Q[state][action] +=  + self.alpha * (reward - self.Q[state][action])
+        else: 
+            self.Q[state][action] +=  + self.alpha * (reward + (self.gamma * self.Q[next_state][next_action]) - self.Q[state][action])
 
     def train(self, n_episodes):
         # TO DO: Implement the agent loop that trains for n_episodes. 
         # Return a vector with the the cumulative reward (=return) per episode
         episode_returns = []
+        environment = self.env_type()
+        for run in range(n_episodes):
+            environment.reset()
+            run_rewards = []
+            while environment.done() is not True:
+                prev_state = environment.state()
+                action = self.select_action(prev_state, environment.possible_actions())
+                reward = environment.step(action) 
+                next_state = environment.state()
+                next_action = self.select_action(next_state, environment.possible_actions)  
+                run_rewards.append(reward)     
+                self.update(prev_state, action, next_state, next_action, reward, environment.done())
+                action = next_action
+            episode_returns.append(sum(run_rewards))
         return episode_returns
 
 

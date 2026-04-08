@@ -1,5 +1,5 @@
 import numpy as np
-from ShortCutEnvironment import ShortcutEnvironment, Environment
+from ShortCutEnvironment import ShortcutEnvironment
 class QLearningAgent(object):
 
     def __init__(self, n_actions, n_states, epsilon=0.1, alpha=0.1, gamma=1.0):

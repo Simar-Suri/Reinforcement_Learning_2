@@ -26,9 +26,9 @@ class QLearningAgent(object):
         
     def update(self, state, action, next_state, reward, done): # Augment arguments if necessary
         if done:
-            self.Q[state][action] +=  + self.alpha * (reward - self.Q[state][action])
+            self.Q[state][action] += self.alpha * (reward - self.Q[state][action])
         else: 
-            self.Q[state][action] +=  + self.alpha * (reward + (self.gamma * np.max(self.Q[next_state])) - self.Q[state][action])
+            self.Q[state][action] += self.alpha * (reward + (self.gamma * np.max(self.Q[next_state])) - self.Q[state][action])
 
     
     def train(self, n_episodes):
@@ -77,9 +77,9 @@ class SARSAAgent(object):
         
     def update(self, state, action, next_state, next_action, reward, done): # Augment arguments if necessary
         if done:
-            self.Q[state][action] +=  + self.alpha * (reward - self.Q[state][action])
+            self.Q[state][action] += self.alpha * (reward - self.Q[state][action])
         else: 
-            self.Q[state][action] +=  + self.alpha * (reward + (self.gamma * self.Q[next_state][next_action]) - self.Q[state][action])
+            self.Q[state][action] += self.alpha * (reward + (self.gamma * self.Q[next_state][next_action]) - self.Q[state][action])
 
     def train(self, n_episodes):
         # TO DO: Implement the agent loop that trains for n_episodes. 
@@ -127,9 +127,9 @@ class ExpectedSARSAAgent(object):
         
     def update(self, state, action, next_state, reward, done): # Augment arguments if necessary
         if done:
-            self.Q[state][action] +=  + self.alpha * (reward - self.Q[state][action])
+            self.Q[state][action] +=  self.alpha * (reward - self.Q[state][action])
         else: 
-            self.Q[state][action] +=  + self.alpha * (reward + (self.gamma * ((self.epsilon / self.n_actions) * np.sum(self.Q[next_state]) + (1 - self.epsilon) * np.max(self.Q[next_state]) )) - self.Q[state][action])
+            self.Q[state][action] +=  self.alpha * (reward + (self.gamma * ((self.epsilon / self.n_actions) * np.sum(self.Q[next_state]) + (1 - self.epsilon) * np.max(self.Q[next_state]) )) - self.Q[state][action])
 
     
     def train(self, n_episodes):

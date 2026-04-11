@@ -152,7 +152,7 @@ class ExpectedSARSAAgent(object):
 
 class nStepSARSAAgent(object):
 
-    def __init__(self, n_actions, n_states, n_steps, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment):
+    def __init__(self, n_actions, n_states, n_steps=1, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment):
         self.n_actions = n_actions
         self.n_states = n_states
         self.epsilon = epsilon

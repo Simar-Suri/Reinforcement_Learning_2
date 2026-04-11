@@ -4,13 +4,21 @@ import numpy as np
 from ShortCutEnvironment import ShortcutEnvironment, WindyShortcutEnvironment
 from ShortCutAgents import QLearningAgent, SARSAAgent, ExpectedSARSAAgent, nStepSARSAAgent
 
-def run_repitions(n_rep, agent_type, n_episode,n_actions=4, n_states=144, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment):
+def run_repitions(n_rep, agent_type, n_episode,n_actions=4, n_states=144, epsilon=0.1, alpha=0.1, gamma=1.0, env_type = ShortcutEnvironment,n=1):
     agent_returms = []
-    for _ in range(n_rep):
-        agent = agent_type(n_actions, n_states, epsilon, alpha, gamma, env_type)
-        returns = agent.train(n_episode)
-        agent_returms.append(returns)
-    avg_returns = np.mean(agent_returms, axis=0)  
+    if agent_type == nStepSARSAAgent:
+        for _ in range(n_rep):
+            agent = agent_type(n_actions, n_states, n, epsilon, alpha, gamma, env_type)
+            returns = agent.train(n_episode)
+            agent_returms.append(returns)
+        avg_returns = np.mean(agent_returms, axis=0)  
+    
+    else:
+        for _ in range(n_rep):
+            agent = agent_type(n_actions, n_states, epsilon, alpha, gamma, env_type)
+            returns = agent.train(n_episode)
+            agent_returms.append(returns)
+        avg_returns = np.mean(agent_returms, axis=0)  
 
     return avg_returns
 
@@ -68,8 +76,33 @@ for a in alpha:
 
 plt.xlabel('Episode')
 plt.ylabel('Cumulative Reward')
-plt.title('Q-Learning with Changing Alpha Values')
+plt.title('SAARSA with Changing Alpha Values')
+plt.legend()
+plt.show()
+
+alpha = [0.01, 0.1, 0.5, 0.9]
+
+for a in alpha:
+    returns = run_repitions(100, ExpectedSARSAAgent, 1000, alpha=a)
+
+    plt.plot(returns, label=f'alpaha:{a}')
+
+plt.xlabel('Episode')
+plt.ylabel('Cumulative Reward')
+plt.title('ExpectedSAARSA with Changing Alpha Values')
 plt.legend()
 plt.show()'''
 
+n= [1, 2, 5, 10, 25]
+
+for a in n:
+    returns = run_repitions(100, nStepSARSAAgent, 1000, n=a)
+
+    plt.plot(returns, label=f'n:{a}')
+
+plt.xlabel('Episode')
+plt.ylabel('Cumulative Reward')
+plt.title('nStepSAARSA with Changing n Values')
+plt.legend()
+plt.show()
 
